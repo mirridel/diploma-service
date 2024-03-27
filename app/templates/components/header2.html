@@ -1,0 +1,71 @@
+<header class="py-3 border-bottom">
+    <div class="container d-flex flex-wrap justify-content-center">
+        <a href="/" class="d-flex align-items-center mb-3 mb-lg-0 me-lg-auto link-body-emphasis text-decoration-none">
+            <div class="me-2">
+                <i class="fs-4 bi bi-car-front"></i>
+            </div>
+            <span class="fs-4">АвтоМастер</span>
+        </a>
+        <form class="col-12 col-lg-auto mb-3 mb-lg-0" role="search">
+            <input type="search" class="form-control" placeholder="Поиск..." aria-label="Поиск">
+        </form>
+    </div>
+</header>
+
+<nav class="py-2 bg-body-tertiary border-bottom">
+    <div class="container d-flex flex-wrap">
+        <ul class="nav me-auto">
+            {% for name, url in menu.items %}
+                <li class="nav-item">
+                    <a {% if location != url %}
+                        class="nav-link link-body-emphasis px-2" href="{{ url }}"
+                    {% else %}
+                        class="nav-link link-body-emphasis px-2 active border-bottom" aria-current="page"
+                    {% endif %} >
+                        {{ name }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+        <ul class="nav">
+            <li class="nav-item me-1">
+                <a href="{% url 'store:cart' %}"
+                   class="btn btn-outline-dark">
+                    <i class="bi bi-cart"></i>
+                </a>
+            </li>
+            <li class="nav-item me-1">
+                <div class="dropdown">
+                    <a class="btn btn-outline-dark" data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if request.user.is_authenticated %}
+                            <i class="bi bi-person-fill-check"></i>
+                        {% else %}
+                            <i class="bi bi-person-fill"></i>
+                        {% endif %}
+                    </a>
+                    <ul class="dropdown-menu text-large" style="">
+                        {% if request.user.is_authenticated %}
+                            <li><a class="dropdown-item" href="{% url 'me' %}">
+                                Личный кабинет
+                            </a></li>
+                            {% if request.user.is_staff %}
+                                <li><a class="dropdown-item" href="{% url 'statistics' %}">
+                                    Статистика
+                                </a></li>
+                            {% endif %}
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="{% url 'account_logout' %}">
+                                Выйти
+                            </a></li>
+                        {% else %}
+                            <li><a href="{% url 'account_login' %}" class="dropdown-item">Войти</a></li>
+                            <li><a href="{% url 'account_signup' %}" class="dropdown-item">Зарегистрироваться</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </div>
+</nav>

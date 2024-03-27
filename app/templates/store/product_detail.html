@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    {% include 'components/store/breadcrumbs.html' with path=category_path active=product %}
+    {# Название #}
+    <h2><strong>{{ product.name }}</strong></h2>
+    {# Контент #}
+    <div class="card mt-3">
+        <div class="card-body">
+            <div class="card-text">
+                <div class="row">
+                    <div class="col-md-4">
+                        {# Главное изображение #}
+                        <div class="ratio ratio-1x1">
+                            <img {% if product.images.first %}
+                                src="{{ product.images.first.image.url }}"
+                            {% else %}
+                                src="{% static 'images/no-image.png' %}"
+                            {% endif %}
+                                alt="{{ product.name }}" style="object-fit: cover">
+                        </div>
+                        {# Остальные изображения #}
+                        {% if product.images.count > 1 %}
+                            <div class="row row-cols-3 mt-1 gx-1">
+                                {% for img in product.images.all|slice:":3" %}
+                                    <div class="col">
+                                        <div class="col ratio ratio-1x1">
+                                            <img src="{{ img.image.url }}"
+                                                 alt="{{ product.name }}-{{ forloop.counter }}"
+                                                 style="object-fit: cover">
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex card-text">
+                                    <h4 class="me-auto mb-0 align-self-center">{{ product.price }} &#8381;</h4>
+                                    <button class="me-1 btn btn-outline-secondary">
+                                        <i class="bi bi-heart"></i>
+                                    </button>
+                                    <a id="delete-button" class="btn btn-success w-25"
+                                       {% if not is_added %}style="display: none"{% endif %}>
+                                        <i class="bi bi-bag-check"></i>
+                                        В корзине!
+                                    </a>
+                                    <a id="add-button" class="btn btn-secondary w-25"
+                                       {% if is_added %}style="display: none" {% endif %}>
+                                        <i class="bi bi-bag"></i>
+                                        Купить
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if product.description %}
+        <div class="card mt-3">
+            <div class="card-body">
+                <div class="card-title">
+                    <h4><strong>Описание</strong></h4>
+                </div>
+                <div class="card-text">
+                    <div>{{ product.description }}</div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if product.productspecs_set.first %}
+        <div class="card mt-3">
+            <div class="card-body">
+                <div class="card-title">
+                    <h4><strong>Характеристики</strong></h4>
+                </div>
+                <div class="card-text">
+                    <table class="table">
+                        <tbody>
+                        {% for spec in product.productspecs_set.all %}
+                            <tr>
+                                <td>{{ spec.name }}</td>
+                                <td>{{ spec.value }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        $("#add-button").click(function (e) {
+            e.preventDefault();
+            $.ajax({
+                type: "GET",
+                url: "{% url 'store:cart_api' %}",
+                data: {
+                    'command': 'create',
+                    'pk': {{ product.id }}
+                },
+                success: function (result) {
+                    console.log(result.content);
+                    $("#delete-button").show()
+                    $("#add-button").hide()
+                },
+                error: function (result) {
+                    alert('error');
+                }
+            });
+        });
+
+        $("#delete-button").click(function (e) {
+            e.preventDefault();
+            $.ajax({
+                type: "GET",
+                url: "{% url 'store:cart_api' %}",
+                data: {
+                    'command': 'delete',
+                    'pk': {{ product.id }}
+                },
+                success: function (result) {
+                    console.log(result.content);
+                    $("#delete-button").hide()
+                    $("#add-button").show()
+                },
+                error: function (result) {
+                    alert('error');
+                }
+            });
+        });
+    </script>
+{% endblock %}

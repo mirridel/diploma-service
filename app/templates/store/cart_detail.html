@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra-head %}
+    <style>
+        .quantity {
+            border-radius: 0;
+            border-color: var(--bs-dark);
+            border-left: 0;
+            border-right: 0;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h2>Корзина</h2>
+    <div class="row">
+        <div class="col">
+            {% for key, item in d.items %}
+                <div class="card mb-3" id="card{{ key.id }}">
+                    <div class="row g-0">
+                        <div class="col-2">
+                            <div class="ratio ratio-1x1">
+                                <img {% if key.images.all.first %}
+                                    src="{{ key.images.all.first.image.url }}"
+                                {% else %}
+                                    src="{% static 'images/no-image.png' %}"
+                                {% endif %}
+                                    class="img-fluid rounded-start" alt="..." style="object-fit: cover;">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card-body">
+                                <div class="d-flex card-title">
+                                    <div class="me-auto">{{ key.name }}</div>
+                                    <div>
+                                        <button class="delete btn btn-outline-dark btn-sm" value="{{ key.id }}">
+                                            <i class="bi bi-heart"></i>
+                                        </button>
+                                        <button class="delete btn btn-outline-dark btn-sm" value="{{ key.id }}">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-text">
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="minus btn btn-sm btn-outline-dark"
+                                                value="{{ key.id }}">-
+                                        </button>
+                                        <span id="q{{ key.id }}"
+                                              class="input quantity form-control"
+                                              role="textbox"
+                                              contenteditable>{{ item }}</span>
+                                        <button type="button" class="plus btn btn-sm btn-outline-dark"
+                                                value="{{ key.id }}">+
+                                        </button>
+                                    </div>
+                                    <div class="text-end">
+                                        <strong>
+                                            {{ key.price }} &#8381;
+                                        </strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Итого</h5>
+                    <div class="card-text">
+                        <div class="mb-3 d-flex">
+                            <div class="me-auto">{{ c }}</div>
+                            <strong>{{ s }} &#8381;</strong>
+                        </div>
+                    </div>
+                    <a href="{% url 'store:checkout' %}" class="btn btn-primary w-100">Перейти к оформлению</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        $(".delete").click(function (e) {
+            e.preventDefault();
+            const pk = $(this).val()
+            const card = $("#card" + pk)
+            $.ajax({
+                type: "GET",
+                url: "{% url 'store:cart_api' %}",
+                data: {
+                    'command': 'delete',
+                    'pk': pk
+                },
+                success: function (result) {
+                    console.log(result.content);
+                    card.hide()
+                },
+                error: function (result) {
+                    alert('error');
+                }
+            });
+        });
+
+        $(".plus").click(function (e) {
+            e.preventDefault();
+            const pk = $(this).val()
+            $.ajax({
+                type: "GET",
+                url: "{% url 'store:cart_api' %}",
+                data: {
+                    'command': 'update',
+                    'action': '+',
+                    'pk': pk
+                },
+                success: function (result) {
+                    console.log(result.content);
+                    const i = $("#q" + pk);
+                    const val = parseInt(i.html())
+                    i.html(val + 1)
+                },
+                error: function (result) {
+                    alert('error');
+                }
+            });
+        });
+
+        $(".minus").click(function (e) {
+            e.preventDefault();
+            const pk = $(this).val()
+            $.ajax({
+                type: "GET",
+                url: "{% url 'store:cart_api' %}",
+                data: {
+                    'command': 'update',
+                    'action': '-',
+                    'pk': pk
+                },
+                success: function (result) {
+                    console.log(result.content);
+                    const i = $("#q" + pk);
+                    const val = parseInt(i.html())
+                    i.html(val - 1)
+                },
+                error: function (result) {
+                    alert('error');
+                }
+            });
+        });
+    </script>
+{% endblock %}

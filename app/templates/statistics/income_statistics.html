@@ -1,0 +1,84 @@
+<div class="row">
+    <div class="col-md-6">
+        <canvas id="firstChart"></canvas>
+    </div>
+    <div class="col-md-6">
+        <canvas id="secondChart"></canvas>
+    </div>
+</div>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">Дата</th>
+        <th scope="col">Кол-во заказов</th>
+        <th scope="col">Сумма</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for datum in data %}
+        <tr>
+            <td>{{ datum.date }}</td>
+            <td>{{ datum.c }}</td>
+            <td>{{ datum.s }}</td>
+        </tr>
+    {% endfor %}
+    <tr>
+        <td></td>
+        <td>{{ count }}</td>
+        <td>{{ summ }}</td>
+    </tr>
+    </tbody>
+</table>
+
+<script>
+    var ctx = document.getElementById('firstChart').getContext('2d');
+    var label_list = [{% for item in data %}"{{ item.date }}",{% endfor %}];
+    var firstChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: label_list,
+            datasets: [{
+                label: 'Стоимость заказов',
+                data: [
+                    {% for item in data %}"{{ item.s }}",{% endfor %}
+                ],
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }],
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    var ctx2 = document.getElementById('secondChart').getContext('2d');
+    var secondChart = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: label_list,
+            datasets: [{
+                label: 'Количество заказов',
+                data: [
+                    {% for item in data %}"{{ item.c }}",{% endfor %}
+                ],
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }],
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {precision: 0},
+                }
+            }
+        }
+    });
+</script>

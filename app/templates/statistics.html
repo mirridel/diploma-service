@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block extra-head %}
+    <script src="https://unpkg.com/htmx.org@1.9.11"
+            integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label for="now" class="form-label">Сегодня</label>
+                <input id="now" class="form-control" value="{{ n }}" disabled>
+            </div>
+            <div class="mb-3">
+                <label for="l" class="form-label">Дата 1</label>
+                <input type="date" class="form-control" name="l" id="l" value="{{ l }}">
+            </div>
+            <div class="mb-3">
+                <label for="r" class="form-label">Дата 2</label>
+                <input type="date" class="form-control" name="r" id="r" value="{{ r }}">
+            </div>
+
+            <div class="accordion" id="accordionPanelsStayOpenExample">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true"
+                                aria-controls="panelsStayOpen-collapseOne">
+                            Статистика по заказам
+                        </button>
+                    </h2>
+                    <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show">
+                        <div class="accordion-body">
+                            <form class="form"
+                                  data-hx-get="{% url 'get_statistics' string='income' %}"
+                                  hx-target="#search-results"
+                                  hx-include="[name='l'], [name='r']">
+                                <div class="mb-3">
+                                    <label class="form-label" for="t1">Тип даты</label>
+                                    <select class="form-select" name="t" id="t1">
+                                        <option value="created_at" selected>По дате создания</option>
+                                        <option value="updated_at">По дате обновления</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="s1">Статус заказов</label>
+                                    <select class="form-select" name="s" id="s1">
+                                        <option value="" selected>Все</option>
+                                        {% for item in order_status_choices %}
+                                            <option value="{{ item.0 }}">{{ item.1 }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary">Сгенерировать</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#panelsStayOpen-collapseTwo" aria-expanded="false"
+                                aria-controls="panelsStayOpen-collapseTwo">
+                            Статистика по услугам
+                        </button>
+                    </h2>
+                    <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse show">
+                        <div class="accordion-body">
+                            <fieldset class="mb-3">
+                                <legend class="fs-6">Группировать</legend>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="с1" name="g"
+                                           value="service_category_name"/>
+                                    <label class="form-check-label" for="с1">по группам</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="с2" name="g"
+                                           value="service_name"/>
+                                    <label class="form-check-label" for="с2">по услугам</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="с3" name="g" value="car"/>
+                                    <label class="form-check-label" for="с3">по ТС</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="с4" name="g" value="date" checked/>
+                                    <label class="form-check-label" for="с4">по датам</label>
+                                </div>
+                            </fieldset>
+                            <button class="btn btn-primary"
+                                    data-hx-get="{% url 'get_statistics' string='service' %}"
+                                    hx-target="#search-results"
+                                    hx-include="[name='l'], [name='r'], [name='c'], [name='t'], [name='g']">
+                                Сгенерировать
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div id="search-results"></div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}

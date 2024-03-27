@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block header %}
+    <div id="myCarousel" class="carousel slide mb-6" data-bs-ride="carousel" style="height: 40vh;">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="0" aria-label="Slide 1"
+                    aria-current="true" class="active"></button>
+            <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="1" aria-label="Slide 2"
+                    class=""></button>
+            <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="2" aria-label="Slide 3"
+                    class=""></button>
+        </div>
+        <div class="carousel-inner" style="height: 100%">
+            <div class="carousel-item active"
+                 style="height: 100%; background-blend-mode: multiply;
+                         background: #858585 url({% static 'images/carousel_1.webp' %}) center;
+                         background-size: cover;">
+                <div class="container">
+                    <div class="carousel-caption text-start">
+                        <h1>Профессиональный ремонт автомобилей</h1>
+                        <p class="opacity-75">
+                            Доверьте нам свой автомобиль.
+                            Наши опытные механики готовы решить любую проблему –
+                            от замены масла до сложных ремонтов двигателя.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item" style="height: 100%; background-blend-mode: multiply;
+                    background: #858585 url({% static 'images/carousel_2.webp' %}) center;
+                    background-size: cover;">
+                <div class="container">
+                    <div class="carousel-caption">
+                        <h1>Качество и надежность</h1>
+                        <p>
+                            Мы используем только оригинальные запчасти и современное оборудование.
+                            Ваш автомобиль будет в надежных руках.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item" style="height: 100%; background-blend-mode: multiply;
+                    background: #858585 url({% static 'images/carousel_3.webp' %}) center;
+                    background-size: cover;">
+                <div class="container">
+                    <div class="carousel-caption text-end">
+                        <h1>Быстрый сервис</h1>
+                        <p>
+                            Мы ценим ваше время. Наши мастера работают оперативно,
+                            чтобы вы могли вернуться на дорогу как можно скорее.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Предыдущий</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Следующий</span>
+        </button>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
+        <div class="col d-flex align-items-start">
+            <div class="icon-square text-body-emphasis d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
+                <i class="bi bi-cart"></i>
+            </div>
+            <div>
+                <h3 class="fs-2 text-body-emphasis">Каталог</h3>
+                <a href="{% url 'store:category_list' %}" class="btn btn-primary">
+                    Перейти >
+                </a>
+            </div>
+        </div>
+        <div class="col d-flex align-items-start">
+            <div class="icon-square text-body-emphasis d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
+                <i class="bi bi-pencil-square"></i>
+            </div>
+            <div>
+                <h3 class="fs-2 text-body-emphasis">Запись на услуги</h3>
+                <a href="{% url 'services:index' %}" class="btn btn-primary">
+                    Перейти >
+                </a>
+            </div>
+        </div>
+        <div class="col d-flex align-items-start">
+            <div class="icon-square text-body-emphasis d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
+                <i class="bi bi-telephone"></i>
+            </div>
+            <div>
+                <h3 class="fs-2 text-body-emphasis">Есть вопросы?</h3>
+                <a href="#" class="btn btn-primary">
+                    Задать вопрос
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

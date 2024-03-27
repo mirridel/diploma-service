@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load crispy_forms_filters %}
+
+{% block content %}
+    <h2>Оформление заказа</h2>
+    <section class="row">
+        <section class="col">
+            <form method="post">
+                {% csrf_token %}
+                {{ client_form|crispy }}
+                {{ form|crispy }}
+                <button class="btn btn-primary" type="submit">
+                    Подтвердить
+                </button>
+            </form>
+        </section>
+        <section class="col">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-title">
+                        Описание заказа
+                    </div>
+                    <div class="card-text">
+                        {% for product in products %}
+                            {{ product.name }} ... {{ product.price }} ₽
+                            <hr>
+                        {% endfor %}
+                        <div>
+                            Итого:
+                        </div>
+                        <div>
+                            <strong>{{ summ }} ₽</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </section>
+{% endblock %}

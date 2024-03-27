@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2 class="text-center">Запись на услуги</h2>
+
+    {% regroup services by category as services_by_category %}
+    {% for category in services_by_category %}
+        <h4 class="my-3">{{ category.grouper.name }}</h4>
+        <div class="list-group">
+            {% for li in category.list %}
+                <a href="{% url 'services:booking' slug=li.slug %}"
+                   class="list-group-item list-group-item-action">
+                    <div class="d-flex">
+                        <div class="me-auto">{{ li.name }}</div>
+                        <div>
+                            {% if not li.fixed_price %}от{% endif %} {{ li.price }} руб.
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% endfor %}
+{% endblock %}

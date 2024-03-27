@@ -1,0 +1,14 @@
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'store:category_list' %}"><small>Каталог</small></a></li>
+        {% for item in path %}
+            <li class="breadcrumb-item">
+                <a href="{% url 'store:category_detail' slug=item.slug %}"><small>{{ item.name }}</small></a>
+            </li>
+        {% endfor %}
+
+        {% if active %}
+            <li class="breadcrumb-item active" aria-current="page"><small>{{ active.name }}</small></li>
+        {% endif %}
+    </ol>
+</nav>

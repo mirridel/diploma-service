@@ -1,0 +1,28 @@
+{% load static %}
+<div class="card mb-3">
+    <div class="row g-0">
+        <div class="col-2">
+            <div class="ratio ratio-1x1">
+                <img {% if product.images.all.first %}
+                    src="{{ product.images.all.first.image.url }}"
+                {% else %}
+                    src="{% static 'images/no-image.png' %}"
+                {% endif %}
+                    class="img-fluid rounded-start" alt="..." style="object-fit: cover;">
+            </div>
+        </div>
+        <div class="col">
+            <div class="card-body">
+                <div class="d-flex card-title">
+                    <div class="me-auto">{{ product.name }}</div>
+                </div>
+                <div class="d-flex card-text">
+                    <div class="me-auto"></div>
+                    <div>
+                        <strong>{{ product.price }} ₽</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

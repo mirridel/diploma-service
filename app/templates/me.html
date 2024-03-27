@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load crispy_forms_filters %}
+
+{% block extra-head %}
+    <style>
+        .accordion-element {
+            padding: 16px 20px 16px 20px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h3>Личный кабинет ({{ request.user.email }})</h3>
+    <div class="row">
+        {# Заказы #}
+        <div class="col">
+            <h5>Личные заказы</h5>
+            <div class="accordion" id="accordionOrders">
+                {% for order in orders %}
+                    <div class="accordion-item mb-3">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="false"
+                                    aria-controls="collapse{{ forloop.counter }}">
+                                <strong>Заказ {{ order.id.hex }}</strong>
+                            </button>
+                        </h2>
+                        <div class="accordion-element d-flex" style="padding-bottom: 0">
+                            <div class="me-auto">{{ order.get_status_display }}</div>
+                            <div>от {{ order.created_at|date:"d.m.Y" }}</div>
+                        </div>
+                        <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                {% for item in order.cart.all %}
+                                    <div>{{ item.product.name }} x {{ item.quantity }} = {{ item.get_item_summary }} &#8381;</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="accordion-element" style="padding-top: 0">
+                            <hr>
+                            <div>Итого: {{ order.summary }} &#8381;</div>
+                            <div>Товаров: {{ order.get_total_quantity }}</div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {# Записи #}
+        <div class="col">
+            <h5>Записи</h5>
+            <div class="accordion" id="accordionServices">
+                {% for service_execution in service_records %}
+                    <div class="accordion-item mb-3">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#service-collapse{{ forloop.counter }}" aria-expanded="false"
+                                    aria-controls="service-collapse{{ forloop.counter }}">
+                                <strong>{{ service_execution.service_record.service.name }}
+                                    ({{ service_execution.service_record.date|date:"d.m.Y H:i" }})</strong>
+                            </button>
+                        </h2>
+                        <div class="accordion-element">
+                            <div>Статус: {{ service_execution.get_status_display }}</div>
+                            <div>Время записи: {{ service_execution.service_record.date|date:"d.m.Y H:i" }}</div>
+                            <div>ТС: {{ service_execution.service_record.car }}</div>
+                            <div>Ориентировочная стоимость: {% if not service_execution.service_record.service.fixed_price %}
+                                от
+                            {% endif %} {{ service_execution.service_record.service.price }} &#8381;</div>
+                        </div>
+                        <div id="service-collapse{{ forloop.counter }}" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                {% if service_execution.conclusion %}
+                                    <h6>Заключение</h6>
+                                    <div>
+                                        {{ service_execution.conclusion }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
