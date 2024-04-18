@@ -3,8 +3,12 @@ import functools
 from copy import deepcopy
 from datetime import timedelta
 
+from django.contrib.admin import display
 from django.db import models
 from django.db.models import Count
+from django.urls import reverse
+from django.utils.safestring import mark_safe
+from django.utils.timezone import now, get_current_timezone
 from slugify import slugify
 
 from car_service.apps.customuser.models import User
@@ -17,8 +21,13 @@ class Garage(models.Model):
         verbose_name = 'Бокс'
         verbose_name_plural = 'Боксы'
 
+    @property
+    @display(description='Кол-во сотрудников')
+    def display_staff_count(self):
+        return self.staff.count()
+
     def __str__(self):
-        return f'{self.location} [кол-во сотрудников: {self.staff.count()}]'
+        return f'{self.location}'
 
 
 class Staff(models.Model):
@@ -88,16 +97,11 @@ class ServiceRecord(models.Model):
     notes = models.TextField(blank=True, null=True, verbose_name='Примечание')
 
     class Meta:
-        verbose_name = 'Запись'
-        verbose_name_plural = 'Записи'
-
-    def save(self, *args, **kwargs):
-        if not self.pk:  # новая запись
-            self.capacity = Garage.objects.count()  # устанавливаем емкость равную кол-во гаражей
-        super().save(*args, **kwargs)
+        verbose_name = 'Запись на услугу'
+        verbose_name_plural = 'Записи на услугу'
 
     def __str__(self):
-        return f"{self.id}) {self.client.first_name} - {self.service.name} ({self.date})"
+        return f'{self.client.first_name} ({self.client.phone_number}) - {self.service.name} ({self.date.astimezone(tz=get_current_timezone()).strftime("%d.%m.%Y %H:%M")}) '
 
 
 class ServiceExecution(models.Model):
@@ -106,6 +110,8 @@ class ServiceExecution(models.Model):
     start_time = models.DateTimeField(blank=True, null=True, verbose_name='Время начала')
     end_time = models.DateTimeField(blank=True, null=True, verbose_name='Время окончания')
     conclusion = models.TextField(blank=True, null=True, default=None, verbose_name='Заключение')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Время создания', blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Время обновления', blank=True, null=True)
     status = models.CharField(max_length=20, choices=[
         ('scheduled', 'В обработке'),
         ('confirmed', 'Подтвержден'),
@@ -113,9 +119,47 @@ class ServiceExecution(models.Model):
         ('cancelled', 'Отменен'),
     ], default='scheduled', verbose_name='Статус')
 
+    @property
+    @display(description='Запись на услугу')
+    def display_record(self):
+        rec = self.service_record
+        ref = reverse('admin:%s_%s_change' % ('services', 'servicerecord'), args=[self.service_record.id])
+        content = f'''
+        <a href='{ref}'>
+            <table>
+                <tbody>
+                    <tr>
+                        <td>Имя</td>
+                        <td>{rec.client.first_name}</td>
+                    </tr>
+                    <tr>
+                        <td>Тел.</td>
+                        <td>{rec.client.phone_number}</td>
+                    </tr>
+                    <tr>
+                        <td>ТС</td>
+                        <td>{rec.car}</td>
+                    </tr>
+                    <tr>
+                        <td>Услуга</td>
+                        <td>{rec.service}</td>
+                    </tr>
+                    <tr>
+                        <td>Время</td>
+                        <td>{rec.date.astimezone(tz=get_current_timezone()).strftime("%d.%m.%Y %H:%M")}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </a>
+        '''
+        return mark_safe(content)
+
+    def __str__(self):
+        return f'Запись о выполнении #{self.id}'
+
     class Meta:
-        verbose_name = 'Исполнение'
-        verbose_name_plural = 'Исполнения'
+        verbose_name = 'Запись об исполнении'
+        verbose_name_plural = 'Записи об исполнении'
 
 
 def lru_cache(maxsize=128, typed=False, copy=False):

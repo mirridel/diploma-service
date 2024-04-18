@@ -4,9 +4,9 @@
     <!-- Breadcrumbs -->
     {% include 'components/store/breadcrumbs.html' with path=category_path active=category %}
     <!-- Content -->
-    <h2>{{ category.name }}</h2>
+    <h3 class="mb-3">{{ category.name }}</h3>
     {% if children %}
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-1">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-3">
             {% for category in children %}
                 <div class="col">
                     <a href="{% url 'store:category_detail' category.slug %}"

@@ -1,11 +1,15 @@
+import time
+
 import pymorphy2
 from django import http
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import render, redirect
 
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
+from django.utils.timezone import now
 from yoomoney import Quickpay
 
 from . import forms, models
@@ -37,37 +41,41 @@ def product_detail(request, slug):
     user_cart = CartHandler(request)
     is_added = str(product.id) in user_cart.cart.keys()
     return render(request, 'store/product_detail.html',
-                  {'product': product, 'category_path': category_path, 'is_added': is_added})
+                  context={'product': product, 'category_path': category_path, 'is_added': is_added})
+
+
+def get_total_content(d):
+    c = sum(d.values())
+    morph = pymorphy2.MorphAnalyzer()
+    w = morph.parse('товар')[0].make_agree_with_number(c).word
+    s = sum(product.price * quantity for product, quantity in d.items())
+    return c, w, s
 
 
 def cart(request):
     user_cart = CartHandler(request)
     products = Product.filtered_objects.filter(id__in=user_cart.cart.keys())
 
+    cookie = None
     if len(user_cart) != products.count():
         q = products.values_list('id', flat=True)
         user_cart.fix(q)
+        cookie = user_cart.save()
 
-    s = 0
-    d = {}
-    for product in products:
-        d[product] = user_cart.cart[str(product.id)]
-        s += (product.price * d[product])
+    d = {product: user_cart.cart[str(product.id)] for product in products}
+    c, w, s = get_total_content(d)
 
-    c = sum(user_cart.cart.values())
-    morph = pymorphy2.MorphAnalyzer()
-    w = morph.parse('товар')[0].make_agree_with_number(c).word
-    return render(request, 'store/cart_detail.html', context={'d': d, 'c': f'{c} {w}', 's': s})
-
-
-command_list = ('create', 'read', 'update', 'delete')
+    response = render(request, 'store/cart_detail.html', context={'d': d, 'c': f'{c} {w}', 's': s})
+    if cookie:
+        response = response.set_cookie('cart', cookie)
+    return response
 
 
 def cart_api(request):
     if request.method != 'GET':
         return http.HttpResponseBadRequest()
     command = request.GET.get('command')
-    if command not in command_list:
+    if command not in ('create', 'read', 'update', 'delete'):
         return http.HttpResponseBadRequest()
     pk = request.GET.get('pk')
 
@@ -85,43 +93,31 @@ def cart_api(request):
     return response
 
 
+@login_required
 def checkout_view(request):
-    if request.user.is_anonymous:
-        messages.error(request, 'Для продолжения оформления заказа авторизуйтесь или зарегистрируйтесь!')
-        return redirect('account_login')
-
     user_cart = CartHandler(request)
     products = Product.filtered_objects.filter(id__in=user_cart.cart.keys())
     if len(user_cart) != products.count():
         q = products.values_list('id', flat=True)
         user_cart.fix(q)
-
     d = {product: user_cart.cart[str(product.id)] for product in products}
-    summ = sum(product.price * quantity for product, quantity in d.items())
-
-    s = sum(user_cart.cart.values())
-    morph = pymorphy2.MorphAnalyzer()
-    w = morph.parse('товар')[0].make_agree_with_number(s).word
-
+    c, w, s = get_total_content(d)
     if request.method == 'POST':
         client_form = ClientForm(request.POST)
         form = forms.OrderForm(request.POST)
-        if form.is_valid() and client_form.is_valid():
+        if client_form.is_valid() and form.is_valid():
             u = User.objects.get(id=request.user.id)
             u.first_name = client_form.cleaned_data['first_name']
             u.last_name = client_form.cleaned_data['last_name']
             u.phone_number = client_form.cleaned_data['phone_number']
             u.save()
-
             order = form.save(commit=False)
             order.user = request.user
             order.save()
-
-            for p, c in d.items():
-                item = models.CartItem.objects.create(product=p, quantity=c, price=p.price)
+            for p, q in d.items():
+                item = models.CartItem.objects.create(product=p, quantity=q, price=p.price)
                 order.cart.add(item)
             order.save()
-
             if settings.YOOMONEY_PAYMENT:
                 quick_pay = Quickpay(
                     receiver=settings.YOOMONEY_RECEIVER,
@@ -133,7 +129,6 @@ def checkout_view(request):
                     label='{}'.format(order.id)
                 )
                 return redirect(quick_pay.redirected_url)
-
             messages.success(request, 'Вы успешно оформили заказ!')
             return redirect('me')
     else:
@@ -142,6 +137,5 @@ def checkout_view(request):
         client_form.fields['last_name'].initial = request.user.last_name
         client_form.fields['phone_number'].initial = request.user.phone_number
         form = forms.OrderForm()
-
     return render(request, 'store/checkout.html',
-                  context={'client_form': client_form, 'form': form, 'd': d, 'products': products, 'summ': summ})
+                  context={'client_form': client_form, 'form': form, 'd': d, 'c': f'{c} {w}', 's': s})

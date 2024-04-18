@@ -29,7 +29,7 @@ class StaffAdmin(admin.ModelAdmin):
 
 @admin.register(models.Garage)
 class GarageAdmin(admin.ModelAdmin):
-    list_display = ('id', 'location')  # Отображаемые поля в списке
+    list_display = ('id', 'location', 'display_staff_count')  # Отображаемые поля в списке
     search_fields = ()  # Поля для поиска
     list_filter = ()
     inlines = [StaffInline]
@@ -55,7 +55,7 @@ class ServiceRecordAdmin(admin.ModelAdmin):
 
 @admin.register(models.ServiceExecution)
 class ServiceExecutionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'service_record', 'garage', 'start_time', 'end_time', 'status')  # Отображаемые поля в списке
+    list_display = ('id', 'display_record', 'garage', 'start_time', 'end_time', 'status')  # Отображаемые поля в списке
     search_fields = ()  # Поля для поиска
-    list_filter = ('status',)
+    list_filter = ('created_at', 'updated_at', 'status',)
     # Другие настройки админ-панели

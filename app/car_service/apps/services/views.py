@@ -4,6 +4,7 @@ from datetime import timedelta
 from dal import autocomplete
 from django.contrib import messages
 from django.contrib.auth import get_user
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Value
 from django.db.models.functions import Concat
 from django.http import HttpResponseNotFound
@@ -22,23 +23,12 @@ class ServiceList(generic.ListView):
     model = models.Service
     context_object_name = 'services'
     template_name = 'services/index.html'
+    ordering = ('category__name',)
 
 
-"""
-Разобраться с tz
-Исправить формы 
-"""
-
-
+@login_required
 def booking(request, slug=None):
-    if request.user.is_anonymous:
-        messages.error(request, 'Для продолжения оформления заказа авторизуйтесь или зарегистрируйтесь!')
-        return redirect('account_login')
-
     service = get_object_or_404(models.Service, slug=slug)
-    if not service:
-        return HttpResponseNotFound()
-
     now = timezone.now()
     free_slots = get_free_slots(now)
     if request.method == 'POST':
@@ -46,7 +36,6 @@ def booking(request, slug=None):
         form_client = ClientForm(request.POST)
         form = forms.ServiceBookingForm(request.POST)
         if form.is_valid() and form_client.is_valid() and ds:
-
             u = User.objects.get(id=request.user.id)
             u.first_name = form_client.cleaned_data['first_name']
             u.last_name = form_client.cleaned_data['last_name']
@@ -62,7 +51,8 @@ def booking(request, slug=None):
             booking_service.save()
             models.ServiceExecution.objects.create(service_record=booking_service)
 
-            return redirect('index')
+            messages.success(request, 'Вы успешно оформили запись!')
+            return redirect('me')
         if not ds:
             messages.error(request, 'Выберите дату и время для записи')
     else:

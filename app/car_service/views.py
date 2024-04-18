@@ -114,14 +114,12 @@ def success(request):
         byte_string = str.encode(confirmation_string)
         hash_object = hashlib.sha1(byte_string)
         hex_dig = hash_object.hexdigest()
-        # Проверка на подлинность запроса
         if sha1_hash and hex_dig == sha1_hash and label:
             order = get_object_or_404(Order, pk=label)
             order.status = 'processing'
             order.save()
         else:
-
-            raise Exception("PAYMENT VERIFICATION ERROR!")
+            raise Exception("Payment exception!")
     except Exception as ex:
         print(ex)
 

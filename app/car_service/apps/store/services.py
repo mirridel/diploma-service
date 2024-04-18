@@ -2,14 +2,18 @@ import pickle
 
 
 class CartHandler:
-    def __init__(self, request):
-        self.request = request
-        cookie = request.COOKIES.get('cart')
-        print(cookie)
+    def __init__(self, request=None, cookie=None):
+        self.cart = {}
+
+        if request:
+            self.request = request
+            self.cookie = request.COOKIES.get('cart', None)
+            if self.cookie:
+                self.cart = pickle.loads(bytes.fromhex(self.cookie))
+
         if cookie:
-            self.cart = pickle.loads(bytes.fromhex(cookie))
-        else:
-            self.cart = {}
+            self.cookie = cookie
+            self.cart = pickle.loads(bytes.fromhex(self.cookie))
 
     def add(self, ids, n):
         self.cart[ids] = n

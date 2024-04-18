@@ -9,27 +9,30 @@
                 {% csrf_token %}
                 {{ client_form|crispy }}
                 {{ form|crispy }}
-                <button class="btn btn-primary" type="submit">
+                <button class="mb-3 btn btn-primary" type="submit">
                     Подтвердить
                 </button>
             </form>
         </section>
-        <section class="col">
+        <section class="col-md-4">
             <div class="card">
                 <div class="card-body">
-                    <div class="card-title">
-                        Описание заказа
-                    </div>
+                    <h5 class="card-title">Описание заказа</h5>
                     <div class="card-text">
-                        {% for product in products %}
-                            {{ product.name }} ... {{ product.price }} ₽
+                        <div>
                             <hr>
-                        {% endfor %}
-                        <div>
-                            Итого:
+                            {% for product, quantity in d.items %}
+                                <div>{{ product.name }}</div>
+                                <div>{{ quantity }} шт. x {{ product.price }} &#8381;
+                                    = {% widthratio quantity 1 product.price %} &#8381;
+                                </div>
+                                <hr>
+                            {% endfor %}
                         </div>
-                        <div>
-                            <strong>{{ summ }} ₽</strong>
+                        <h5>Итого</h5>
+                        <div class="d-md-flex">
+                            <div class="me-auto">{{ c }}</div>
+                            <strong>{{ s }} &#8381;</strong>
                         </div>
                     </div>
                 </div>
